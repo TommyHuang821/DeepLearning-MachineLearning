@@ -1,7 +1,7 @@
 # DeepLearning-MachineLearning
 
 It's a Matlab Tool for DeepLearning/MachineLearning.
-I'm not integrate them yet,so each folder (method) works individually.
+I don't integrate them yet,so each folder (method) works individually.
 
 # Folder (DeepNeuralNetwork)
    This tool is Deep Neural Network.
