@@ -29,7 +29,7 @@ I'm not integrate them yet,so each folder (method) works individually.
    
    For instance, 2 hidden layers, first one has 20 node, second one has 10 node:  
      
-     DesignDNNLayersize=[SizeInputLayer 20 SizeOutputLayer];
+     DesignDNNLayersize=[SizeInputLayer 20 10 SizeOutputLayer];
     
    Your own DNN structure is
    
