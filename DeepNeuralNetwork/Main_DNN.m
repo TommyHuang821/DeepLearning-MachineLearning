@@ -22,8 +22,8 @@ load ('sampledata')
 [Ntrain dim]=size(traindata);
 SizeInputLayer=dim+1;
 SizeOutputLayer=1;
-DesignDNNLayersize=[SizeInputLayer 20 SizeOutputLayer]; 
-AactivationFunction={'sigmoid','linear'}; %% sigmoid,tanh ,ReLU, linear
+DesignDNNLayersize=[SizeInputLayer 20 10 SizeOutputLayer]; 
+AactivationFunction={'sigmoid','sigmoid','linear'}; %% sigmoid,tanh ,ReLU, linear
 maxIter=1000;
 LearningRate=0.01;
 LearningApproach='Adam';%% 'SGD','Momentum','AdaGrad','RMSProp','Adam'

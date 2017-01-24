@@ -1,4 +1,4 @@
-function [DNN_net]=DNN_Learning_ForwardBack_whole(this_pat,act,DNN_net)
+function [DNN_net]=DNN_Learning_ForwardBack(this_pat,act,DNN_net)
 
 
 L=DNN_net.L-1; % total layer
@@ -10,6 +10,7 @@ W=DNN_net.W;
 delta_W=DNN_net.delta_W;
 r=DNN_net.r;
 LearningApproach=DNN_net.LearningApproach;
+SizeOutputLayer=DNN_net.DesignDNNLayersize(end);
 
 
 % forward
@@ -21,7 +22,14 @@ for i=1:NumconnectionLayer
     else
         Z{i}=W{i}*V{i-1}; % hidden-hidden & hidden-output
     end
-    V{i}=saf(Z{i});
+    if (i==NumconnectionLayer) & (SizeOutputLayer>=2) % classification case
+        tmp=softmax_Sheng(Z{i}');
+        V{i}=tmp';
+    else
+        V{i}=saf(Z{i});
+    end
+        
+        
 end
 
 
