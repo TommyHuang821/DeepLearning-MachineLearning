@@ -27,13 +27,11 @@ I'm not integrate them yet,so each folder (method) works individually.
    
    It' very easy to set your 'number of hidden layer' and 'number of hidden node'
    
-   For instance: 
+   For instance, 2 hidden layers, first one has 20 node, second one has 10 node:  
      
-     2 hidden layers, first one has 20 node, second one has 10 node.
+     DesignDNNLayersize=[SizeInputLayer 20 SizeOutputLayer];
     
-     DesignDNNLayersize=[SizeInputLayer 20 SizeOutputLayer]; 
-   
-   YOur own DNN structure is
+   Your own DNN structure is
    
    InputLayer(dim+1 nodes)→HiddenLayer1(20 nodes)→HiddenLayer2(10 nodes)→OutputLayer(Regression: 1 node, Classification: NumClass nodes)
    
