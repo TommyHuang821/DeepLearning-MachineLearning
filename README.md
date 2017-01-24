@@ -53,4 +53,5 @@ I don't integrate them yet,so each folder (method) works individually.
    LearningRate=0.01; %% Learning rate
    
    % which type of optimal search approach
+   
    LearningApproach='Adam'; %% 'SGD','Momentum','AdaGrad','RMSProp','Adam'
