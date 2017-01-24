@@ -1,0 +1,14 @@
+
+# Self-organizing map (SOM)
+
+% parameter for SOM
+option.MaxInter=100; % iteration of SOM
+option.isplot=0; % plot learning movie, if training data is 2D
+option.numNode=2; % 2D matrix is 2 x 2
+option.LearningRate=2; % learning rate
+option.SigmaNF=1; % sigma for Neighborhood function
+
+% Learning 
+W=SOM(data,option); 
+
+%% data: must be a n * dimension matrix
