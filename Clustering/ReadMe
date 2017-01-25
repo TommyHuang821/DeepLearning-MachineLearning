@@ -1,0 +1,10 @@
+# Clustering Approach
+
+In this clustering folder, I just provide some  commonly used clustering approches.
+In fact, these approaches can be found in MATALB tool library.
+
+Kmedoid.m → kmedoid.m in matlab tool library.
+kmeans_sheng.m → kmeans.m in matlab tool library.    This distance is Euclidean distance.
+kmeans_MD_sheng.m → kmeans.m in matlab tool library. This distance is Mahalanobis distance.
+FuzzyCmean.m(fuzzy c-means, sometime call fuzzy k-means) → fcm.m in matlab tool library. 
+
