@@ -1,8 +1,6 @@
 load fisheriris
 x = meas(51:end,1:2);        % iris data, 2 classes and 2 features
 y = (1:100)'>50;             % versicolor=0, virginica=1
-% b = glmfit(x,y,'binomial');  % logistic regression
-% p = glmval(b,x,'logit');     % get fitted probabilities for scores
 
 [stat]=LogisticRegression(x,y);
 
