@@ -1,5 +1,6 @@
 function [FisherInformation J Sb Sw]=FisherCriteria(data,label)
 %%%Fisher Criterion Calculation
+%% used to quantify the separability for the data. 
 % Input: 
 %       data: n x dim matrix
 %       label: corresponding label, class label must start at 1
