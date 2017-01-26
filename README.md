@@ -1,7 +1,9 @@
 # DeepLearning-MachineLearning
 
-It's a Matlab Tool for DeepLearning/MachineLearning.
+It's a Matlab Tool for Deep Learning and Machine Learning approach.
 I don't integrate them yet,so each folder (method) works individually.
+
+I will integrate them and release a user interface if I have time to do that.
 
 # How to use the tool? 
 Please see the ReadMe in each folder.
