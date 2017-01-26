@@ -1,0 +1,15 @@
+# Dimension Reduction
+
+1. Feature extraction
+ 
+ Unsupervise approach:
+ 1.1 Principal Component Analysis (PCA)
+ 
+ Supervised approach:
+ 1.2 Discriminant Analysis Feature Extraction(DAFE, sometime called Linear Discriminant Analysis (LDA))
+     In order to avoid to confuse with classification case, usually used the name DAFE.
+
+
+
+2. Feature selection
+continuous....
