@@ -39,7 +39,7 @@ end
 e{L}=V{L}-act;
 for i=0:NHiddenLayer
     sdaf=daf{L-i};
-    tmp=(sdaf(V{L-i}).*e{L-i});
+    tmp=(sdaf(Z{L-i}).*e{L-i});
     if i~=NHiddenLayer
         delta_W{L-i}=tmp*V{L-i-1}';
         e{L-i-1}=W{L-i}'*tmp;
