@@ -85,7 +85,7 @@ for iter=1:maxIter
     if iter>=2
         CostChange(iter)=(CostValue(iter)-CostValue(iter-1))^2;
     end
-    fprintf('Inter: %d ,learning rate: %f ,Cost: %f, CostChange: %d\n',iter,DNN_net.r,CostValue(iter),CostChange(iter));
+    fprintf('Iter: %d ,learning rate: %f ,Cost: %f, CostChange: %d\n',iter,DNN_net.r,CostValue(iter),CostChange(iter));
     if (iter>=2) &&(( CostChange(iter)< eps*2) | CostValue(iter)< 0.1 )  % break, if converge
         fprintf('converged at epoch: %d\n',iter);
         break 
