@@ -1,98 +1,87 @@
-function DNN_net=DNN_Learning_batch(traindata,train_out,DNN_net)
-
-
-%%%%
-[Ntrain dim]=size(traindata);
-if Ntrain<=dim %% because traindata must be n x dim
-   traindata=traindata';
-   [Ntrain dim]=size(traindata);
-end
-if size(train_out,1)<size(train_out,2) %% because train_out must be n x 1
-    train_out=train_out';
-end
-if size(train_out,1)~=Ntrain
-    error ('Number of traindata and train_out is different.');
-end 
-if isfield(DNN_net,'batchsize')==0
-    batchsize=floor(Ntrain/10);
-else
-    batchsize=DNN_net.batchsize;
-end
-
-if isfield(DNN_net,'maxIter')==0
-    maxIter=10000;
-else
-    maxIter=DNN_net.maxIter; %% max of learning iteration, if not converge 
-end
-
-
-%% 1. Zscore for each dimesnsion, standardise the data to mean=0 and standard deviation=1
-% input training data
-Normal_traindata=traindata;
-mu_train=zeros(dim,1);
-sigma_trian=zeros(dim,1);
-for i=1:dim
-    mu_train(i,1) = mean(traindata(:,i));
-    sigma_trian(i,1) = std(traindata(:,i));
-    Normal_traindata(:,i) = (traindata(:,i) - mu_train(i,1)) / sigma_trian(i,1);
-end
-DNN_net.mu_train=mu_train;
-DNN_net.sigma_trian=sigma_trian;
-% output data, if regression case
+function [DNN_net]=DNN_Learning_ForwardBack(this_pat,act,DNN_net)
+% this_pat: sizeofinputlayer x n
+% act: sizeofoutlayer x n
+[~,Ntrain]=size(this_pat);
+L=DNN_net.L-1; % total layer
+af=DNN_net.af; % formula of active function
+daf=DNN_net.daf; % formula of derived active function
+NumconnectionLayer=numel(DNN_net.DesignDNNLayersize)-1; % how many connection
+NHiddenLayer=NumconnectionLayer-1;
+W=DNN_net.W;
+delta_W=DNN_net.delta_W;
+Wb=DNN_net.Wb;
+delta_Wb=DNN_net.delta_Wb;
+r=DNN_net.r;
+LearningApproach=DNN_net.LearningApproach;
 SizeOutputLayer=DNN_net.DesignDNNLayersize(end);
-if SizeOutputLayer>=2
-    act=train_out;
-    DNN_net.mu_output='';
-    DNN_net.sigma_output='';
-else
-    act=train_out;
-    mu_output=mean(act);
-    sigma_output=std(act);
-    act=(act-mu_output)./sigma_output;
-    DNN_net.mu_output=mu_output;
-    DNN_net.sigma_output=sigma_output;
-end
-%% 2. add a bias as an input
-% bias = ones(Ntrain,1);
-% Normal_traindata = [Normal_traindata bias];
-X=Normal_traindata; %% just simplify the code name
-%% 3. DNN Learning
-CostValue=zeros(maxIter,1); %% value of cost function 
-CostChange=zeros(maxIter,1); %% difference between CostValue of the i-th and (i-1)-th iteration
 
-numbatches = Ntrain / batchsize;
-for iter=1:maxIter  
-    
-   kk = randperm(Ntrain);
-   errorvalue=0;
-%    tic
-    for l = 1 : numbatches
-        batch_x = X(kk((l - 1) * batchsize + 1 : l * batchsize), :);
-        batch_out = act(kk((l - 1) * batchsize + 1 : l * batchsize), :);
-       
-        [DNN_net]=DNN_Learning_ForwardBack(batch_x',batch_out',DNN_net);
 
-        pred = DNN_net.V{end};
-        if SizeOutputLayer>=2 % classification case
-            pred=softmax_Sheng(pred');
-            for i=1:batchsize
-                errorvalue=errorvalue-log10( pred(i,(batch_out(i,:)==1)));
-            end
-        else % regression case
-            errorvalue=errorvalue+sqrt((pred-batch_out')*(pred-batch_out')');
-        end
+% forward
+% input layer to hidden layer
+for i=1:NumconnectionLayer
+    saf=af{i};
+    if i==1
+        Z{i}=W{i}*this_pat; % input-hidden
+    else
+        Z{i}=W{i}*V{i-1}; % hidden-hidden & hidden-output
     end
-%     toc
-    CostValue(iter)=errorvalue;
-    if iter>=2
-        CostChange(iter)=(CostValue(iter)-CostValue(iter-1))^2;
-    end
-    fprintf('Iter: %d ,learning rate: %f ,Cost: %f, CostChange: %d\n',iter,DNN_net.r,CostValue(iter),CostChange(iter));
-    if (iter>=2) &&(( CostChange(iter)<= eps) | CostValue(iter)< 0.1 )  % break, if converge
-        fprintf('converged at epoch: %d\n',iter);
-        break 
-    end   
+    Z{i}=Z{i}+repmat(Wb{i},1,Ntrain);
+    if (i==NumconnectionLayer) & (SizeOutputLayer>=2) % classification case
+        tmp=softmax_Sheng(Z{i}');
+        V{i}=tmp';
+    else
+        V{i}=saf(Z{i});
+    end 
 end
-DNN_net.CostValue=CostValue;
-DNN_net.CostChange=CostChange;
-DNN_net.Pred_TrainingData=pred;
+
+
+% back-propagation
+e{L}=V{L}-act;
+for i=0:NHiddenLayer
+    sdaf=daf{L-i};
+    tmp=(sdaf(V{L-i}).*e{L-i});
+    if i~=NHiddenLayer
+        delta_W{L-i}=tmp*V{L-i-1}';
+        e{L-i-1}=W{L-i}'*tmp;
+    else  
+        delta_W{L-i}=tmp*this_pat';
+    end     
+    delta_Wb{L-i}=mean(tmp,2);
+end
+
+% update
+%% https://www.youtube.com/watch?v=UlUGGB7akfE&t=79s&list=PLXO45tsB95cKI5AIlf5TxxFPzb-0zeVZ8&index=15
+for i=1:length(delta_W)
+    if strcmp(LearningApproach,'SGD')
+        W{i}=W{i}-r.*delta_W{i};
+        Wb{i}=Wb{i}-r.*delta_Wb{i};
+    elseif strcmp(LearningApproach,'Momentum')
+        W{i}=W{i}.*DNN_net.m-r.*delta_W{i};
+        Wb{i}=Wb{i}.*DNN_net.m-r.*delta_Wb{i};
+    elseif strcmp(LearningApproach,'AdaGrad')
+        tmp=(delta_W{i}.^2);
+        W{i}=W{i}-r.*delta_W{i}./sqrt(tmp);
+        tmp=(delta_Wb{i}.^2);
+        Wb{i}=Wb{i}-r.*delta_Wb{i}./sqrt(tmp);
+    elseif strcmp(LearningApproach,'RMSProp')
+        tmp=(delta_W{i}.^2);
+        tmp=DNN_net.m*tmp+(1-DNN_net.m)*tmp;
+        W{i}=W{i}-r.*delta_W{i}./sqrt(tmp);
+
+        tmp=(delta_Wb{i}.^2);
+        tmp=DNN_net.m*tmp+(1-DNN_net.m)*tmp;
+        Wb{i}=Wb{i}-r.*delta_Wb{i}./sqrt(tmp);
+    elseif strcmp(LearningApproach,'Adam')
+        DNN_net.delta_W{i}=DNN_net.b1*DNN_net.delta_W{i}+(1-DNN_net.b1)*delta_W{i};
+        DNN_net.v{i}=DNN_net.b2*DNN_net.v{i}+(1-DNN_net.b2)*delta_W{i}.^2;
+        W{i}=W{i}-r.* delta_W{i}./sqrt(DNN_net.v{i});
+
+        DNN_net.delta_Wb{i}=DNN_net.b1*DNN_net.delta_Wb{i}+(1-DNN_net.b1)*delta_Wb{i};
+        DNN_net.vb{i}=DNN_net.b2*DNN_net.vb{i}+(1-DNN_net.b2)*delta_Wb{i}.^2;
+        Wb{i}=Wb{i}-r.* delta_Wb{i}./sqrt(DNN_net.vb{i});
+    end
+end
+DNN_net.W=W; % update Weight
+DNN_net.Wb=Wb; % update Weight
+DNN_net.V=V; % active value
+DNN_net.Z=Z; % mapping value
