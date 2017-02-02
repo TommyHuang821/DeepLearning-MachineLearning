@@ -49,16 +49,16 @@ dWeight{2}.b = zeros(visibleSize,1);
 
 if strcmp(ActivationFunction,'sigmoid')
     af{1}=@(x) (1./(1+exp(-x))); % sigmoid function
-    daf{1}=@(x) (1-x).*x; % deviated sigmoid function
+    daf{1}=@(x) (1-af{1}(x)).*af{1}(x); % deviated sigmoid function
 elseif strcmp(ActivationFunction,'linear')
     af{1}=@(x) (x); % linear
     daf{1}=@(x) (1); % deviated linear
 elseif strcmp(ActivationFunction,'tanh')
     af{1}=@(x) ((exp(x)-exp(-x))./(exp(x)+exp(-x))); % 
-    daf{1}=@(x) (1-x.^2); % deviated tanh
+    daf{1}=@(x) (1-af{1}(x).^2); % deviated tanh
 elseif strcmp(ActivationFunction,'ReLU') % Rectified linear unit 
     af{1}=@(x) (double(x>=0).*x); 
-    daf{1}=@(x) double(x>=0); % deviated
+    daf{1}=@(x) double(af{1}(x)>=0); % deviated
 end
 % output must be a linear Activation Function
 af{2}=@(x) (x); % linear
@@ -71,6 +71,14 @@ if strcmp(LearningApproach,'Momentum')
     Net.m=0.99;
 elseif strcmp(LearningApproach,'RMSProp')
     Net.m=0.9;
+elseif strcmp(LearningApproach,'Adam')
+
+    Net.v{1}=zeros(hiddenSize,visibleSize);
+    Net.v{2}=zeros(visibleSize,hiddenSize);
+    Net.vb{1}=zeros(hiddenSize,1);
+    Net.vb{2}= zeros(visibleSize,1);
+    Net.b1=0.9;
+    Net.b2=0.999;
 end
 
 
