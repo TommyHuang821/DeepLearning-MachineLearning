@@ -27,7 +27,7 @@ if length(ActivationFunction)==1
     if strcmp(ActivationFunction,'sigmoid')
         for i=1:L-2
             af{i}=@(x) (1./(1+exp(-x))); % sigmoid function
-            daf{i}=@(x) (1-x).*x; % deviated sigmoid function
+            daf{i}=@(x) af{i}(x)*(1-af{i}(x)); % deviated sigmoid function
         end
     elseif strcmp(ActivationFunction,'linear')
         for i=1:L-2
@@ -37,12 +37,12 @@ if length(ActivationFunction)==1
     elseif strcmp(ActivationFunction,'tanh')
         for i=1:L-2
             af{i}=@(x) ((exp(x)-exp(-x))./(exp(x)+exp(-x))); % 
-            daf{i}=@(x) (1-x.^2); % deviated tanh
+            daf{i}=@(x) (1-af{i}(x).^2); % deviated tanh
         end
     elseif strcmp(ActivationFunction,'ReLU') % Rectified linear unit 
         for i=1:L-2
             af{i}=@(x) (double(x>=0).*x); 
-            daf{i}=@(x) double(x>=0); % deviated
+            daf{i}=@(x) double(af{i}(x)>=0); % deviated
         end
     end
     % output must be a linear Activation function
@@ -54,16 +54,17 @@ else
     for i=1:L-1 
         if strcmp(ActivationFunction{i},'sigmoid')
             af{i}=@(x) (1./(1+exp(-x))); % sigmoid function
-            daf{i}=@(x) (1-x).*x; % deviated sigmoid function
+%             daf{i}=@(x) (1-x).*x; % deviated sigmoid function
+            daf{i}=@(x) (af{i}(x)).*(1.-af{i}(x)); % deviated sigmoid function
         elseif strcmp(ActivationFunction{i},'linear')
             af{i}=@(x) (x); % linear
             daf{i}=@(x) (1); % deviated linear
         elseif strcmp(ActivationFunction{i},'tanh')
             af{i}=@(x) ((exp(x)-exp(-x))./(exp(x)+exp(-x))); % 
-            daf{i}=@(x) (1-x.^2); % deviated tanh
+            daf{i}=@(x) (1- af{i}(x).^2); % deviated tanh
         elseif strcmp(ActivationFunction{i},'ReLU') % Rectified linear unit 
             af{i}=@(x) (double(x>=0).*x); 
-            daf{i}=@(x) double(x>=0); % deviated
+            daf{i}=@(x) double(af{i}(x)>=0); % deviated
         end
     end
 end
