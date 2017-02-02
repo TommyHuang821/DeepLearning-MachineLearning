@@ -8,11 +8,16 @@ end
 L=length(DesignDNNLayersize);
 W{L-1}={};
 delta_W{L-1}={};
+Wb{L-1}={};
+delta_Wb{L-1}={};
 %% forward
 for i=1:L-1
     w = (randn(DesignDNNLayersize(i+1),DesignDNNLayersize(i)) - 0.5)/10;
+    wb = zeros(DesignDNNLayersize(i+1),1);
     W{i}=w;
+    Wb{i}=wb;
     delta_W{i}=zeros(DesignDNNLayersize(i+1),DesignDNNLayersize(i));
+    delta_Wb{i}=zeros(DesignDNNLayersize(i+1),1);
 end
 
  %% Aactivation Function
@@ -73,6 +78,7 @@ elseif strcmp(LearningApproach,'RMSProp')
 elseif strcmp(LearningApproach,'Adam')
     for i=1:L-1
         DNN_net.v{i}=zeros(DesignDNNLayersize(i+1),DesignDNNLayersize(i));
+        DNN_net.vb{i}=zeros(DesignDNNLayersize(i+1),1);
     end
     DNN_net.b1=0.9;
     DNN_net.b2=0.999;
@@ -80,7 +86,9 @@ end
 
 
 DNN_net.W=W;
+DNN_net.Wb=Wb;
 DNN_net.delta_W=delta_W;
+DNN_net.delta_Wb=delta_Wb;
 DNN_net.af=af;
 DNN_net.daf=daf;
 DNN_net.L=L;
