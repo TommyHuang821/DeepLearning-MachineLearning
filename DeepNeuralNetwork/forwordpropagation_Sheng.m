@@ -1,28 +1,32 @@
-function DNN_net=forwordpropagation_Sheng(this_pat,DNN_net)
-% this_pat: input data, n x dim
+function DNN_net=forwordpropagation(this_pat,DNN_net)
+% this_pat: input data, dim x n
 % Weight: weight for all layer
-% B: intercept for all layer
+% Wb: intercept for all layer
 % NumhiddenLayer: number of hidden layer
 % af: Aactivation function
 
-%%%%%%%%%%%%%%
-% input layer to hidden layer
-NumconnectionLayer=numel(DNN_net.DesignDNNLayersize)-1; % how many connection
-NumhiddenLayer=NumconnectionLayer-1;
+[~,N]=size(this_pat);
+NumconnectionLayer=DNN_net.L-1; % how many connection
+SizeOutputLayer=DNN_net.DesignDNNLayersize(end);
 Weight=DNN_net.W;
+Wb=DNN_net.Wb;
 af=DNN_net.af;
 
-for i=1:NumhiddenLayer
+for i=1:NumconnectionLayer
     saf=af{i};
     if i==1
         Z{i}=Weight{i}*this_pat; % input-hidden
     else
         Z{i}=Weight{i}*V{i-1}; % hidden-hidden
     end
-    V{i}=saf(Z{i});
+    Z{i}=Z{i}+repmat(Wb{i},1,N);
+    if (i==NumconnectionLayer) & (SizeOutputLayer>=2) % classification case
+        tmp=softmax_Sheng(Z{i}');
+        V{i}=tmp';
+    else
+        V{i}=saf(Z{i});
+    end 
 end
-Z{NumconnectionLayer}=Weight{NumconnectionLayer}*V{NumconnectionLayer-1}; % hidden-output
-V{NumconnectionLayer}=Z{NumconnectionLayer};
 DNN_net.Z=Z;
 DNN_net.V=V;
 
