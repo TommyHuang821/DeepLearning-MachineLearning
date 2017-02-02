@@ -50,10 +50,10 @@ Jsparse = sum(sparsityParam.*log(sparsityParam./rho)+ ...
 cost = Jcost+lambda*Jweight+beta*Jsparse;
 
 %% backpropagation
-d3=-(data'-a3).*daf{2}(a3);
+d3=-(data'-a3).*daf{2}(z3);
 % bacause sparse constraint, must include this term
 sterm = beta*(-sparsityParam./rho+(1-sparsityParam)./(1-rho));
-d2 = (W_decoder'*d3+repmat(sterm,1,Ntrain)).*daf{1}(a2); 
+d2 = (W_decoder'*d3+repmat(sterm,1,Ntrain)).*daf{1}(z2); 
 
 %W_encoder_grad 
 W_encoder_grad = W_encoder_grad+d2*data;
