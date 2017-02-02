@@ -53,8 +53,8 @@ else
     DNN_net.sigma_output=sigma_output;
 end
 %% 2. add a bias as an input
-bias = ones(Ntrain,1);
-Normal_traindata = [Normal_traindata bias];
+% bias = ones(Ntrain,1);
+% Normal_traindata = [Normal_traindata bias];
 X=Normal_traindata; %% just simplify the code name
 %% 3. DNN Learning
 CostValue=zeros(maxIter,1); %% value of cost function 
@@ -65,12 +65,13 @@ for iter=1:maxIter
     
    kk = randperm(Ntrain);
    errorvalue=0;
+%    tic
     for l = 1 : numbatches
         batch_x = X(kk((l - 1) * batchsize + 1 : l * batchsize), :);
         batch_out = act(kk((l - 1) * batchsize + 1 : l * batchsize), :);
-%         tic
+       
         [DNN_net]=DNN_Learning_ForwardBack(batch_x',batch_out',DNN_net);
-%         toc
+
         pred = DNN_net.V{end};
         if SizeOutputLayer>=2 % classification case
             pred=softmax_Sheng(pred');
@@ -81,12 +82,13 @@ for iter=1:maxIter
             errorvalue=errorvalue+sqrt((pred-batch_out')*(pred-batch_out')');
         end
     end
+%     toc
     CostValue(iter)=errorvalue;
     if iter>=2
         CostChange(iter)=(CostValue(iter)-CostValue(iter-1))^2;
     end
     fprintf('Iter: %d ,learning rate: %f ,Cost: %f, CostChange: %d\n',iter,DNN_net.r,CostValue(iter),CostChange(iter));
-    if (iter>=2) &&(( CostChange(iter)< eps*2) | CostValue(iter)< 0.1 )  % break, if converge
+    if (iter>=2) &&(( CostChange(iter)<= eps) | CostValue(iter)< 0.1 )  % break, if converge
         fprintf('converged at epoch: %d\n',iter);
         break 
     end   
