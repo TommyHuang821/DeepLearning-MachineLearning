@@ -11,7 +11,8 @@ Option_SAE.maxIter=1000;
 Option_SAE.lambda=0.0001; % weight decay parameter 
 Option_Sparsity.beta=0.1;  % weight of sparsity penalty term 
 Option_Sparsity.sparsityParam=0.01;  % desired average activation of the hidden units
-LearningApproach='SGD';% 'SGD','Momentum','AdaGrad','RMSProp';
+LearningApproach='SGD';% 'SGD','Momentum','AdaGrad','RMSProp','Adam';
+
 
 Net=Initialization_Net_SAE(DesignSAELayersize,Option_SAE,Option_Sparsity,LearningApproach);
 
