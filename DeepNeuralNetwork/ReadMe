@@ -13,7 +13,7 @@
    
    # How to design your own DNN structure?
    
-   SizeInputLayer: please set to dimension of input data plus one (i.e. dim+1).
+   SizeInputLayer: please set to dimension of input data (i.e. dimension).
    
    It' very easy to set your 'number of hidden layer' and 'number of hidden node'
    For instance, 2 hidden layers, first one has 20 node, second one has 10 node:  
