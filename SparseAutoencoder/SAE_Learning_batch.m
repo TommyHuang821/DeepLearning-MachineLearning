@@ -39,6 +39,15 @@ for iter=1:Net.maxIter
                 tmp=(Net.dWeight{ip}.b.^2);
                 tmp=Net.m*tmp+(1-Net.m)*tmp;
                 Net.Weight{ip}.b=Net.Weight{ip}.b-lr.*Net.dWeight{ip}.b./sqrt(tmp);
+
+            elseif strcmp(Net.LearningApproach,'Adam')
+       
+                Net.dWeight{ip}.W=Net.b1*Net.dWeight{ip}.W+(1-Net.b1)*Net.dWeight{ip}.W;
+                Net.v{ip}=Net.b2*Net.v{ip}+(1-Net.b2)*Net.dWeight{ip}.W.^2;
+                Net.Weight{ip}.W=Net.Weight{ip}.W-lr.* Net.dWeight{ip}.W./sqrt( Net.v{ip});
+                Net.dWeight{ip}.b=Net.b1*Net.dWeight{ip}.b+(1-Net.b1)*Net.dWeight{ip}.b;
+                Net.vb{ip}=Net.b2*Net.vb{ip}+(1-Net.b2)*Net.dWeight{ip}.b.^2;
+                Net.Weight{ip}.b=Net.Weight{ip}.b-lr.* Net.dWeight{ip}.b./sqrt( Net.vb{ip});
             end
         end
 
