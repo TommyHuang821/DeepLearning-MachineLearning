@@ -1,0 +1,17 @@
+# Sparse Autoencoder (SAE)
+
+DesignSAELayersize=[dim,5]; % design the structure of SAE, first and second element are visualsize(usually dimension of input data) and hiddensize (number of hidden note).
+Option_SAE.ActivationFunction='sigmoid'; % 'sigmoid','linear','tanh','ReLU'
+Option_SAE.LearningRate=0.05; % learning rate
+Option_SAE.maxIter=1000; % maximum iteration
+Option_SAE.lambda=0.0001; % weight decay parameter 
+Option_Sparsity.beta=0.1;  % weight of sparsity penalty term 
+Option_Sparsity.sparsityParam=0.01;  % desired average activation of the hidden units
+LearningApproach='SGD';% 'SGD','Momentum','AdaGrad','RMSProp'; SGD is slow, but stable.
+
+% initialize the SAE
+Net=Initialization_Net_SAE(DesignSAELayersize,Option_SAE,Option_Sparsity,LearningApproach); 
+
+Net.batchsize=10;
+Net=SAE_Learning_batch(X,Net);
+
