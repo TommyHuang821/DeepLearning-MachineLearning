@@ -83,9 +83,9 @@ for iter=1:maxIter
         end
     end
 %     toc
-    CostValue(iter)=errorvalue;
+    CostValue(iter)=errorvalue/Ntrain;
     if iter>=2
-        CostChange(iter)=(CostValue(iter)-CostValue(iter-1))^2;
+        CostChange(iter)=abs(CostValue(iter)-CostValue(iter-1));
     end
     fprintf('Iter: %d/%d ,learning rate: %f ,Cost: %f, CostChange: %d\n',iter,maxIter,DNN_net.r,CostValue(iter),CostChange(iter));
     if (iter>=2) &&(( CostChange(iter)<= eps) | CostValue(iter)< 0.1 )  % break, if converge
