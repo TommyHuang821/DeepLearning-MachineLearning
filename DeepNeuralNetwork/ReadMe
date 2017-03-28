@@ -1,9 +1,13 @@
+In this version, I didn't apply the batch normalization and dropout apporach in learning process. 
+I would upload a new version with these two approaches.
+
+
 # Folder (DeepNeuralNetwork)
    This tool is Deep Neural Network.
    The detail of how to used, you can find in example file (Main_DNN.m)
    I write the regression and classification example for XOR problem.
    
-   The exmple data is sampledata.m, actually you can generate your own data by yourself (example code is marked).
+   The exmple data is sampledata.m, actually you can generate your own data by yourself (example code is marked).   
    
    # Regression case:   
         SizeOutputLayer: please set to 1.
