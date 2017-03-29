@@ -70,8 +70,11 @@ for iter=1:maxIter
         batch_x = X(kk((l - 1) * batchsize + 1 : l * batchsize), :);
         batch_out = act(kk((l - 1) * batchsize + 1 : l * batchsize), :);
        
-        [DNN_net]=DNN_Learning_ForwardBack(batch_x',batch_out',DNN_net);
-
+        % DNN_net=DNN_Learning_ForwardBack(batch_x',batch_out',DNN_net);
+        DNN_net=DNN_feedforward(batch_x',DNN_net);
+        DNN_net=DNN_feedbackward(batch_x',batch_out',DNN_net);
+        DNN_net=DNN_UpdateGradients(DNN_net);
+        
         pred = DNN_net.V{end};
         if SizeOutputLayer>=2 % classification case
             pred=softmax_Sheng(pred');
@@ -88,7 +91,7 @@ for iter=1:maxIter
         CostChange(iter)=abs(CostValue(iter)-CostValue(iter-1));
     end
     fprintf('Iter: %d/%d ,learning rate: %f ,Cost: %f, CostChange: %d\n',iter,maxIter,DNN_net.r,CostValue(iter),CostChange(iter));
-    if (iter>=2) &&(( CostChange(iter)<= eps) | CostValue(iter)< 0.1 )  % break, if converge
+    if (iter>=2) &&(( CostChange(iter)<= eps) | CostValue(iter)<= eps )  % break, if converge
         fprintf('converged at epoch: %d\n',iter);
         break 
     end   
