@@ -75,11 +75,17 @@ DNN_net.LearningApproach=LearningApproach;
 if strcmp(LearningApproach,'Momentum')
     DNN_net.m=0.99;
 elseif strcmp(LearningApproach,'RMSProp')
+    for i=1:L-1
+        DNN_net.v{i}=zeros(DesignDNNLayersize(i+1),DesignDNNLayersize(i));
+        DNN_net.vb{i}=zeros(DesignDNNLayersize(i+1),1);
+    end
     DNN_net.m=0.9;
 elseif strcmp(LearningApproach,'Adam')
     for i=1:L-1
         DNN_net.v{i}=zeros(DesignDNNLayersize(i+1),DesignDNNLayersize(i));
         DNN_net.vb{i}=zeros(DesignDNNLayersize(i+1),1);
+        DNN_net.mt{i}=zeros(DesignDNNLayersize(i+1),DesignDNNLayersize(i));
+        DNN_net.mtb{i}=zeros(DesignDNNLayersize(i+1),1);
     end
     DNN_net.b1=0.9;
     DNN_net.b2=0.999;
@@ -88,6 +94,8 @@ end
 
 DNN_net.W=W;
 DNN_net.Wb=Wb;
+DNN_net.dW=delta_W; % used for store gradient descent
+DNN_net.dWb=delta_Wb; % % used for store gradient descent
 DNN_net.delta_W=delta_W;
 DNN_net.delta_Wb=delta_Wb;
 DNN_net.af=af;
