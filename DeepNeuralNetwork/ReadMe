@@ -1,3 +1,5 @@
+3/29/2017, correct some errors in the optimation approach. 
+
 In this version, I didn't apply the batch normalization and dropout approach in the learning process. 
 I would upload a new version with these two approaches.
 
