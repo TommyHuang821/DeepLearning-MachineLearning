@@ -1,0 +1,27 @@
+Convolutional Neural Network
+Upload 03/30/2017
+The optimation approach of this version just includes 'SGD', the others would be modified in the future.
+
+# Folder (ConvolutionalNeuralNetwork)
+   This tool is Convolutional Neural Network.
+   The detail of how to used, you can find in example file (Main_CNN.m)
+   I used the MNIST handwritten digit database as example. 
+   The structure of CNN is input→6c(Sigmoid)→2s→12c(Sigmoid)→2s→connection(Sigmoid)→output
+
+
+# CNN structure Design 
+CNN_net.LayerDesign={
+   struct('LayerType','I','LayerName','IL')                                            % input layer
+   struct('LayerType','C','LayerName','C1','n_map',6,'kernelsize',5,'ActF','sigmoid')  % convolution layer
+   struct('LayerType','S','LayerName','S2','scale',2)                                  % Pooling layer
+   struct('LayerType','C','LayerName','C3','n_map',12,'kernelsize',5,'ActF','sigmoid') % convolution layer
+   struct('LayerType','S','LayerName','S4','scale',2)                                  % Pooling layer
+   struct('LayerType','F','LayerName','F5','ActF','sigmoid')                           % FullConnection layer
+};
+   
+# reference
+   MNIST handwritten digit database, Yann LeCun, Corinna Cortes and Chris Burges - The home of the database
+   http://yann.lecun.com/exdb/mnist/
+   
+   TenforFlow description for MNIST
+   https://www.tensorflow.org/get_started/mnist/beginners
