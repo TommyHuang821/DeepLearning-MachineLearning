@@ -27,7 +27,7 @@ if length(ActivationFunction)==1
     if strcmp(ActivationFunction,'sigmoid')
         for i=1:L-2
             af{i}=@(x) (1./(1+exp(-x))); % sigmoid function
-            daf{i}=@(x) af{i}(x)*(1-af{i}(x)); % deviated sigmoid function
+            daf{i}=@(x) af{i}(x).*(1.-af{i}(x)); % deviated sigmoid function
         end
     elseif strcmp(ActivationFunction,'linear')
         for i=1:L-2
