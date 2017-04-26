@@ -5,12 +5,12 @@ for iL= 1 : numel(CNN_net.LayerDesign)   %  layer
     tmpLayerType=CNN_net.LayerDesign{iL}.LayerType;
     if strcmp(tmpLayerType,'C')
         mapsize = mapsize - CNN_net.LayerDesign{iL}.kernelsize + 1; % because convolution, the map size would be changed.
-        n_out = CNN_net.LayerDesign{iL}.n_map * CNN_net.LayerDesign{iL}.kernelsize ^ 2;
+        n_out = CNN_net.LayerDesign{iL}.n_map * CNN_net.LayerDesign{iL}.kernelsize;
 
          for j = 1 : CNN_net.LayerDesign{iL}.n_map  % Number of output map
-            n_in = n_inputmap * CNN_net.LayerDesign{iL}.kernelsize ^ 2;
+            n_in = n_inputmap * CNN_net.LayerDesign{iL}.kernelsize;
             for i = 1 : n_inputmap  %  input map
-                 CNN_net.LayerDesign{iL}.kernelmap{i}{j} = (rand(1,CNN_net.LayerDesign{iL}.kernelsize) - 0.5) * 2 * sqrt(6 / (n_in + n_out));
+                 CNN_net.LayerDesign{iL}.kernelmap{i}{j} = (rand(1,CNN_net.LayerDesign{iL}.kernelsize) - 0.5) * sqrt(6 / (n_in + n_out));
             end
             CNN_net.LayerDesign{iL}.b{j} = 0;
          end
