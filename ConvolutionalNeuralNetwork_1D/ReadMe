@@ -6,6 +6,8 @@ The optimation approach of this version just includes 'SGD', the others would be
    This tool is One dimension Convolutional Neural Network.
    The detail of how to used, you can find in example file (Main_CNN.m)
    I used one sample from the MIT-BIH arrhythmia database as example.
+   The result could not be converged possibly because the labeling has the problem.
+   
 
 # CNN structure Design 
 CNN_net.LayerDesign={
