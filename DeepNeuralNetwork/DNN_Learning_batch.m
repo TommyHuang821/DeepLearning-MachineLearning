@@ -75,9 +75,13 @@ for iter=1:maxIter
         DNN_net=DNN_feedbackward(batch_x',batch_out',DNN_net);
         DNN_net=DNN_UpdateGradients(DNN_net);
         
-        pred = DNN_net.V{end};
+        pred = DNN_net.V{end};        
+        if DNN_net.DesignDNNLayersize(end)==size(pred,2)
+            pred=pred;
+        else
+            pred=pred';
+        end
         if SizeOutputLayer>=2 % classification case
-            pred=softmax_Sheng(pred');
             for i=1:batchsize
                 errorvalue=errorvalue-log10( pred(i,(batch_out(i,:)==1)));
             end
