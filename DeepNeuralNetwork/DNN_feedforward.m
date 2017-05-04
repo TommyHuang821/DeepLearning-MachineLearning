@@ -21,8 +21,12 @@ for i=1:NumconnectionLayer
     end
     Z{i}=Z{i}+repmat(Wb{i},1,N);
     if (i==NumconnectionLayer) & (SizeOutputLayer>=2) % classification case
-        tmp=softmax_Sheng(Z{i}');
-        V{i}=tmp';
+        tmp=softmax_Sheng(Z{i}');        
+        if sum(size(Z{i}') == size(tmp))==2
+            V{i}=tmp';
+        else
+            V{i}=tmp;
+        end
     else
         V{i}=saf(Z{i});
     end 
