@@ -1,6 +1,4 @@
 function DNN_net=DNN_feedbackward(DNN_net)
-% this_pat: sizeofinputlayer x n
-% this_y: sizeofoutlayer x n
 
 % back-propagation
 for iL= numel(DNN_net.LayerDesign) : -1 : 2    %  layer
