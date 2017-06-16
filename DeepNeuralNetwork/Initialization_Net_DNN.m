@@ -1,108 +1,56 @@
-function DNN_net=Initialization_Net_DNN(DesignDNNLayersize,LearningRate,ActivationFunction,maxIter,LearningApproach)
-
-if nargin<5
-    LearningApproach='SGD';
-end
+function DNN_net=Initialization_Net_DNN(DNN_net)
+%%% LearningApproach:'SGD','Momentum','AdaGrad','RMSProp','Adam'
 
 
-L=length(DesignDNNLayersize);
-W{L-1}={};
-delta_W{L-1}={};
-Wb{L-1}={};
-delta_Wb{L-1}={};
-%% forward
-for i=1:L-1
-    w = (randn(DesignDNNLayersize(i+1),DesignDNNLayersize(i)) - 0.5)/10;
-    wb = zeros(DesignDNNLayersize(i+1),1);
-    W{i}=w;
-    Wb{i}=wb;
-    delta_W{i}=zeros(DesignDNNLayersize(i+1),DesignDNNLayersize(i));
-    delta_Wb{i}=zeros(DesignDNNLayersize(i+1),1);
-end
+%%% learning rate, default=0.1
+if ~isfield(DNN_net,'r'); DNN_net.r=0.1; end
+%%% max of learning iteration (epoch), if not converge 
+if ~isfield(DNN_net,'maxIter'); DNN_net.maxIter=100; end
+% droupout fraction
+if ~isfield(DNN_net,'dropoutFraction');  DNN_net.dropoutFraction=0.5; end
+%%% batch learning
+if ~isfield(DNN_net,'batchsize'); DNN_net.batchsize=100; end
+%%% normalization for each dimension
+if ~isfield(DNN_net,'isnormalization'); DNN_net.isnormalization=0; end
+%%% default optimalization is 'SGD'
+if ~isfield(DNN_net,'LearningApproach'); DNN_net.LearningApproach='SGD'; end
 
- %% Aactivation Function
-af{L-1}={};
-daf{L-1}={};
-if length(ActivationFunction)==1
-    if strcmp(ActivationFunction,'sigmoid')
-        for i=1:L-2
-            af{i}=@(x) (1./(1+exp(-x))); % sigmoid function
-            daf{i}=@(x) af{i}(x).*(1.-af{i}(x)); % deviated sigmoid function
+for iL= 1 : numel(DNN_net.LayerDesign)   %  layer
+    tmpLayerType=DNN_net.LayerDesign{iL}.LayerType;    
+    if strcmp(tmpLayerType,'Hidden') || strcmp(tmpLayerType,'Output')
+        tmpActF=DNN_net.LayerDesign{iL}.ActF;
+        DNN_net.LayerDesign{iL}.W = randn(DNN_net.LayerDesign{iL}.n_node,DNN_net.LayerDesign{iL-1}.n_node)- 0.5/10;
+        DNN_net.LayerDesign{iL}.Wb= zeros(DNN_net.LayerDesign{iL}.n_node,1);
+        DNN_net.LayerDesign{iL}.delta_W=zeros(DNN_net.LayerDesign{iL}.n_node,DNN_net.LayerDesign{iL-1}.n_node);
+        DNN_net.LayerDesign{iL}.delta_Wb=zeros(DNN_net.LayerDesign{iL}.n_node,1); 
+        
+        if strcmp(tmpActF,'PReLU') || strcmp(tmpActF,'ELU')
+            if isfield(DNN_net.LayerDesign{iL},'option_ActFunction'); 
+                option_ActFunction=DNN_net.option_ActFunction; 
+            else
+                option_ActFunction=0.01;
+            end
+            [DNN_net.LayerDesign{iL}.af, DNN_net.LayerDesign{iL}.daf]=AactivationFunction(tmpActF,option_ActFunction);
+        else
+            [DNN_net.LayerDesign{iL}.af, DNN_net.LayerDesign{iL}.daf]=AactivationFunction(tmpActF);
         end
-    elseif strcmp(ActivationFunction,'linear')
-        for i=1:L-2
-            af{i}=@(x) (x); % linear
-            daf{i}=@(x) (1); % deviated linear
-        end
-    elseif strcmp(ActivationFunction,'tanh')
-        for i=1:L-2
-            af{i}=@(x) ((exp(x)-exp(-x))./(exp(x)+exp(-x))); % 
-            daf{i}=@(x) (1-af{i}(x).^2); % deviated tanh
-        end
-    elseif strcmp(ActivationFunction,'ReLU') % Rectified linear unit 
-        for i=1:L-2
-            af{i}=@(x) (double(x>=0).*x); 
-            daf{i}=@(x) double(af{i}(x)>=0); % deviated
-        end
-    end
-    % output must be a linear Activation function
-    af{L-1}=@(x) (x); % linear
-    daf{L-1}=@(x) (1); % deviated linear
-elseif length(ActivationFunction) ~= (L-1)
-    error('Number of Activation Function Seting is not equal to Layer number');
-else
-    for i=1:L-1 
-        if strcmp(ActivationFunction{i},'sigmoid')
-            af{i}=@(x) (1./(1+exp(-x))); % sigmoid function
-%             daf{i}=@(x) (1-x).*x; % deviated sigmoid function
-            daf{i}=@(x) (af{i}(x)).*(1.-af{i}(x)); % deviated sigmoid function
-        elseif strcmp(ActivationFunction{i},'linear')
-            af{i}=@(x) (x); % linear
-            daf{i}=@(x) (1); % deviated linear
-        elseif strcmp(ActivationFunction{i},'tanh')
-            af{i}=@(x) ((exp(x)-exp(-x))./(exp(x)+exp(-x))); % 
-            daf{i}=@(x) (1- af{i}(x).^2); % deviated tanh
-        elseif strcmp(ActivationFunction{i},'ReLU') % Rectified linear unit 
-            af{i}=@(x) (double(x>=0).*x); 
-            daf{i}=@(x) double(af{i}(x)>=0); % deviated
-        end
+        
+        if strcmp(DNN_net.LearningApproach,'Momentum')
+            DNN_net.optimal.m=0.99;
+        elseif strcmp(DNN_net.LearningApproach,'RMSProp')
+            DNN_net.LayerDesign{iL}.v=zeros(DNN_net.LayerDesign{iL}.n_node,DNN_net.LayerDesign{iL-1}.n_node);
+            DNN_net.LayerDesign{iL}.vb=zeros(DNN_net.LayerDesign{iL}.n_node,1);
+            DNN_net.optimal.m=0.9;
+        elseif strcmp(DNN_net.LearningApproach,'Adam')
+            DNN_net.LayerDesign{iL}.v=zeros(DNN_net.LayerDesign{iL}.n_node,DNN_net.LayerDesign{iL-1}.n_node);
+            DNN_net.LayerDesign{iL}.vb=zeros(DNN_net.LayerDesign{iL}.n_node,1);
+            DNN_net.LayerDesign{iL}.mt=zeros(DNN_net.LayerDesign{iL}.n_node,DNN_net.LayerDesign{iL-1}.n_node);
+            DNN_net.LayerDesign{iL}.mtb=zeros(DNN_net.LayerDesign{iL}.n_node,1);
+            DNN_net.optimal.b1=0.9;
+            DNN_net.optimal.b2=0.999;
+        end 
     end
 end
 
+        
 
-DNN_net=[];
-DNN_net.LearningApproach=LearningApproach;
-if strcmp(LearningApproach,'Momentum')
-    DNN_net.m=0.99;
-elseif strcmp(LearningApproach,'RMSProp')
-    for i=1:L-1
-        DNN_net.v{i}=zeros(DesignDNNLayersize(i+1),DesignDNNLayersize(i));
-        DNN_net.vb{i}=zeros(DesignDNNLayersize(i+1),1);
-    end
-    DNN_net.m=0.9;
-elseif strcmp(LearningApproach,'Adam')
-    for i=1:L-1
-        DNN_net.v{i}=zeros(DesignDNNLayersize(i+1),DesignDNNLayersize(i));
-        DNN_net.vb{i}=zeros(DesignDNNLayersize(i+1),1);
-        DNN_net.mt{i}=zeros(DesignDNNLayersize(i+1),DesignDNNLayersize(i));
-        DNN_net.mtb{i}=zeros(DesignDNNLayersize(i+1),1);
-    end
-    DNN_net.b1=0.9;
-    DNN_net.b2=0.999;
-end
-
-
-DNN_net.W=W;
-DNN_net.Wb=Wb;
-DNN_net.dW=delta_W; % used for store gradient descent
-DNN_net.dWb=delta_Wb; % % used for store gradient descent
-DNN_net.delta_W=delta_W;
-DNN_net.delta_Wb=delta_Wb;
-DNN_net.af=af;
-DNN_net.daf=daf;
-DNN_net.L=L;
-DNN_net.r=LearningRate;
-DNN_net.V{1}=0;
-DNN_net.ActivationFunctionName=ActivationFunction;
-DNN_net.maxIter=maxIter;
-DNN_net.DesignDNNLayersize=DesignDNNLayersize;

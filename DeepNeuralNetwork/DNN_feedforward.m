@@ -1,37 +1,35 @@
-function DNN_net=DNN_feedforward(this_pat,DNN_net)
+function DNN_net=DNN_feedforward(this_pat,this_y,DNN_net,IndexTestdata)
 % this_pat: input data, dim x n
-% Weight: weight for all layer
-% Wb: intercept for all layer
-% NumhiddenLayer: number of hidden layer
-% af: Aactivation function
-
-[~,N]=size(this_pat);
-NumconnectionLayer=DNN_net.L-1; % how many connection
-SizeOutputLayer=DNN_net.DesignDNNLayersize(end);
-W=DNN_net.W;
-Wb=DNN_net.Wb;
-af=DNN_net.af;
-
-for i=1:NumconnectionLayer
-    saf=af{i};
-    if i==1
-        Z{i}=W{i}*this_pat; % input-hidden
-    else
-        Z{i}=W{i}*V{i-1}; % hidden-hidden
-    end
-    Z{i}=Z{i}+repmat(Wb{i},1,N);
-    if (i==NumconnectionLayer) & (SizeOutputLayer>=2) % classification case
-        tmp=softmax_Sheng(Z{i}');        
-        if sum(size(Z{i}') == size(tmp))==2
-            V{i}=tmp';
-        else
-            V{i}=tmp;
-        end
-    else
-        V{i}=saf(Z{i});
-    end 
+if nargin<4
+    IndexTestdata=0;
 end
-DNN_net.Z=Z;
-DNN_net.V=V;
-
+[~,N]=size(this_pat);
+for iL= 1 : numel(DNN_net.LayerDesign)   %  layer
+    tmpLayerType=DNN_net.LayerDesign{iL}.LayerType;   
+    if strcmp(tmpLayerType,'Input')
+        DNN_net.LayerDesign{iL}.a=this_pat;
+    elseif strcmp(tmpLayerType,'Hidden')
+        saf=DNN_net.LayerDesign{iL}.af;
+        DNN_net.LayerDesign{iL}.z=DNN_net.LayerDesign{iL}.W*DNN_net.LayerDesign{iL-1}.a;
+        DNN_net.LayerDesign{iL}.z=DNN_net.LayerDesign{iL}.z+repmat(DNN_net.LayerDesign{iL}.Wb,1,N);
+        DNN_net.LayerDesign{iL}.a=saf(DNN_net.LayerDesign{iL}.z);        
+        %%% dropout for learning in the hidden layer
+        if IndexTestdata~=1
+            if (DNN_net.dropoutFraction > 0)
+                DNN_net.LayerDesign{iL}.dropOutMask = (rand(size(DNN_net.LayerDesign{iL}.a))>DNN_net.dropoutFraction);
+                DNN_net.LayerDesign{iL}.a = DNN_net.LayerDesign{iL}.a.*DNN_net.LayerDesign{iL}.dropOutMask;
+            end   
+        end
+    elseif  strcmp(tmpLayerType,'Output')
+        saf=DNN_net.LayerDesign{iL}.af;
+        DNN_net.LayerDesign{iL}.z=DNN_net.LayerDesign{iL}.W*DNN_net.LayerDesign{iL-1}.a;
+        DNN_net.LayerDesign{iL}.z=DNN_net.LayerDesign{iL}.z+repmat(DNN_net.LayerDesign{iL}.Wb,1,N);
+        DNN_net.LayerDesign{iL}.a=saf(DNN_net.LayerDesign{iL}.z);  
+        if (DNN_net.LayerDesign{iL}.n_node>=2)
+            tmp=softmax_Sheng(DNN_net.LayerDesign{iL}.a');
+            DNN_net.LayerDesign{iL}.a=tmp';
+        end
+        DNN_net.LayerDesign{iL}.y=this_y;
+    end
+end
 

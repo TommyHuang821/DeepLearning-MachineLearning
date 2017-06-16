@@ -1,27 +1,29 @@
-function DNN_net=DNN_feedbackward(this_pat,act,DNN_net)
+function DNN_net=DNN_feedbackward(DNN_net)
 % this_pat: sizeofinputlayer x n
-% act: sizeofoutlayer x n
-L=DNN_net.L-1; % total layer
-daf=DNN_net.daf; % formula of derived active function
-NumconnectionLayer=numel(DNN_net.DesignDNNLayersize)-1; % how many connection
-NHiddenLayer=NumconnectionLayer-1;
-W=DNN_net.W;
-Z=DNN_net.Z;
-dW=DNN_net.dW;
-dWb=DNN_net.dWb;
-V=DNN_net.V;
+% this_y: sizeofoutlayer x n
+
 % back-propagation
-e{L}=V{L}-act;
-for i=0:NHiddenLayer
-    sdaf=daf{L-i};
-    tmp=(sdaf(Z{L-i}).*e{L-i});
-    if i~=NHiddenLayer
-        dW{L-i}=tmp*V{L-i-1}';
-        e{L-i-1}=W{L-i}'*tmp;
-    else  
-        dW{L-i}=tmp*this_pat';
-    end     
-    dWb{L-i}=mean(tmp,2);
+for iL= numel(DNN_net.LayerDesign) : -1 : 2    %  layer
+    tmpLayerType=DNN_net.LayerDesign{iL}.LayerType;   
+    if strcmp(tmpLayerType,'Output')
+        DNN_net.LayerDesign{iL}.e=DNN_net.LayerDesign{iL}.a-DNN_net.LayerDesign{iL}.y;
+        sdaf=DNN_net.LayerDesign{iL}.daf;
+        tmp=(sdaf(DNN_net.LayerDesign{iL}.z).*DNN_net.LayerDesign{iL}.e);
+        DNN_net.LayerDesign{iL-1}.e=DNN_net.LayerDesign{iL}.W'*tmp;
+        DNN_net.LayerDesign{iL}.dW=tmp*DNN_net.LayerDesign{iL-1}.a'/size(tmp, 1);
+        DNN_net.LayerDesign{iL}.dWb=mean(tmp,2);
+    elseif strcmp(tmpLayerType,'Hidden')
+        sdaf=DNN_net.LayerDesign{iL}.daf;
+        tmp=(sdaf(DNN_net.LayerDesign{iL}.z).*DNN_net.LayerDesign{iL}.e);
+        DNN_net.LayerDesign{iL-1}.e=DNN_net.LayerDesign{iL}.W'*tmp;
+        if(DNN_net.dropoutFraction>0) && iL>2
+            DNN_net.LayerDesign{iL-1}.e = DNN_net.LayerDesign{iL-1}.e .* DNN_net.LayerDesign{iL-1}.dropOutMask;
+        end  
+        DNN_net.LayerDesign{iL}.dW=tmp*DNN_net.LayerDesign{iL-1}.a'/size(tmp, 1);
+        DNN_net.LayerDesign{iL}.dWb=mean(tmp,2);
+    end   
 end
-DNN_net.dW=dW;
-DNN_net.dWb=dWb;
+
+
+
+

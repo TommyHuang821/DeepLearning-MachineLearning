@@ -1,45 +1,43 @@
 function DNN_net=DNN_Learning_batch(traindata,train_out,DNN_net)
 
-
-%%%%
-[Ntrain dim]=size(traindata);
-if Ntrain<=dim %% because traindata must be n x dim
+%%%% check inputdata
+[Ntrain, dim]=size(traindata);
+[Ntrain2, dim2]=size(train_out); %% train_out must be (n x class) or (n x 1)
+if Ntrain~=Ntrain2 & Ntrain2==dim
    traindata=traindata';
-   [Ntrain dim]=size(traindata);
+   [Ntrain, dim]=size(traindata);
 end
-if size(train_out,1)<size(train_out,2) %% because train_out must be n x 1
-    train_out=train_out';
-end
-if size(train_out,1)~=Ntrain
+if Ntrain~=Ntrain2
     error ('Number of traindata and train_out is different.');
 end 
-if isfield(DNN_net,'batchsize')==0
-    batchsize=floor(Ntrain/10);
-else
-    batchsize=DNN_net.batchsize;
-end
 
-if isfield(DNN_net,'maxIter')==0
-    maxIter=10000;
-else
-    maxIter=DNN_net.maxIter; %% max of learning iteration, if not converge 
-end
-
+%%% batch learning
+batchsize=DNN_net.batchsize;
+%%% normalization for each dimension
+isnormalization=DNN_net.isnormalization;
+%%% max of learning iteration (epoch), if not converge 
+maxIter=DNN_net.maxIter;
 
 %% 1. Zscore for each dimesnsion, standardise the data to mean=0 and standard deviation=1
 % input training data
-Normal_traindata=traindata;
-mu_train=zeros(dim,1);
-sigma_trian=zeros(dim,1);
-for i=1:dim
-    mu_train(i,1) = mean(traindata(:,i));
-    sigma_trian(i,1) = std(traindata(:,i));
-    Normal_traindata(:,i) = (traindata(:,i) - mu_train(i,1)) / sigma_trian(i,1);
+if isnormalization==1
+    Normal_traindata=traindata;
+    mu_train=zeros(dim,1);
+    sigma_trian=zeros(dim,1);
+    for i=1:dim
+        mu_train(i,1) = mean(traindata(:,i));
+        sigma_trian(i,1) = std(traindata(:,i));
+        Normal_traindata(:,i) = (traindata(:,i) - mu_train(i,1)) / sigma_trian(i,1);
+    end
+    DNN_net.mu_train=mu_train;
+    DNN_net.sigma_trian=sigma_trian;
+    X=Normal_traindata; %% just simplify the code name
+else
+    X=traindata;
 end
-DNN_net.mu_train=mu_train;
-DNN_net.sigma_trian=sigma_trian;
-% output data, if regression case
-SizeOutputLayer=DNN_net.DesignDNNLayersize(end);
+
+SizeOutputLayer=DNN_net.LayerDesign{end}.n_node;
+% output data normalization for only regression case
 if SizeOutputLayer>=2
     act=train_out;
     DNN_net.mu_output='';
@@ -52,41 +50,35 @@ else
     DNN_net.mu_output=mu_output;
     DNN_net.sigma_output=sigma_output;
 end
-%% 2. add a bias as an input
-% bias = ones(Ntrain,1);
-% Normal_traindata = [Normal_traindata bias];
-X=Normal_traindata; %% just simplify the code name
+
 %% 3. DNN Learning
 CostValue=zeros(maxIter,1); %% value of cost function 
 CostChange=zeros(maxIter,1); %% difference between CostValue of the i-th and (i-1)-th iteration
 
 numbatches = Ntrain / batchsize;
 for iter=1:maxIter  
-    
    kk = randperm(Ntrain);
    errorvalue=0;
-%    tic
     for l = 1 : numbatches
+%         pos=find(kk==l);
         batch_x = X(kk((l - 1) * batchsize + 1 : l * batchsize), :);
         batch_out = act(kk((l - 1) * batchsize + 1 : l * batchsize), :);
        
-        % DNN_net=DNN_Learning_ForwardBack(batch_x',batch_out',DNN_net);
-        DNN_net=DNN_feedforward(batch_x',DNN_net);
-        DNN_net=DNN_feedbackward(batch_x',batch_out',DNN_net);
-        DNN_net=DNN_UpdateGradients(DNN_net);
-        
-        pred = DNN_net.V{end};        
-        if DNN_net.DesignDNNLayersize(end)==size(pred,2)
-            pred=pred;
-        else
+        DNN_net=DNN_feedforward(batch_x',batch_out',DNN_net);
+        DNN_net=DNN_feedbackward(DNN_net);
+        [DNN_net]=DNN_UpdateGradients(DNN_net);
+         
+        pred =DNN_net.LayerDesign{end}.a;
+        if DNN_net.LayerDesign{end}.n_node~=size(pred,2)
             pred=pred';
         end
+        
         if SizeOutputLayer>=2 % classification case
             for i=1:batchsize
                 errorvalue=errorvalue-log10( pred(i,(batch_out(i,:)==1)));
             end
         else % regression case
-            errorvalue=errorvalue+sqrt((pred-batch_out')*(pred-batch_out')');
+            errorvalue=errorvalue+sqrt((pred-batch_out)'*(pred-batch_out));
         end
     end
 %     toc
@@ -95,7 +87,7 @@ for iter=1:maxIter
         CostChange(iter)=abs(CostValue(iter)-CostValue(iter-1));
     end
     fprintf('Iter: %d/%d ,learning rate: %f ,Cost: %f, CostChange: %d\n',iter,maxIter,DNN_net.r,CostValue(iter),CostChange(iter));
-    if (iter>=2) &&(( CostChange(iter)<= eps) | CostValue(iter)<= eps )  % break, if converge
+    if (iter>=2) &&(( CostChange(iter)<= eps) || CostValue(iter)<= eps )  % break, if converge
         fprintf('converged at epoch: %d\n',iter);
         break 
     end   

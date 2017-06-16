@@ -3,59 +3,53 @@ function [DNN_net]=DNN_UpdateGradients(DNN_net)
 r=DNN_net.r;
 LearningApproach=DNN_net.LearningApproach;
 
-W=DNN_net.W;
-Wb=DNN_net.Wb;
-delta_W=DNN_net.delta_W;
-dW=DNN_net.dW;
-delta_Wb=DNN_net.delta_Wb;
-dWb=DNN_net.dWb;
-
-% update
 %% https://www.youtube.com/watch?v=UlUGGB7akfE&t=79s&list=PLXO45tsB95cKI5AIlf5TxxFPzb-0zeVZ8&index=15
-for i=1:length(delta_W)
-    if strcmp(LearningApproach,'SGD')
-        delta_W{i}=dW{i};
-        delta_Wb{i}=dWb{i};
-    elseif strcmp(LearningApproach,'Momentum')
-        m=DNN_net.m;
-        delta_W{i}= m *delta_W{i}+(1-m).*dW{i};
-        delta_Wb{i}= m *delta_Wb{i}+(1-m).*dWb{i};
-    elseif strcmp(LearningApproach,'AdaGrad')
-        g2=(dW{i}.^2);
-        delta_W{i}=dW{i}./sqrt(g2);
-        g2b=(dWb{i}.^2);
-        delta_Wb{i}=dWb{i}./sqrt(g2b);
-    elseif strcmp(LearningApproach,'RMSProp')
-        g2=(dW{i}.^2);
-        DNN_net.v{i}=DNN_net.m *DNN_net.v{i}+(1-DNN_net.m)*g2;
-        delta_W{i}=dW{i}./sqrt(DNN_net.v{i}+10^-8); 
-        
-        g2b=(dWb{i}.^2);
-        DNN_net.vb{i}=DNN_net.m *DNN_net.vb{i}+(1-DNN_net.m)*g2b;
-        delta_Wb{i}=dWb{i}./sqrt( DNN_net.vb{i}+10^-8);  
-    elseif strcmp(LearningApproach,'Adam')
-        b1=DNN_net.b1;
-        b2=DNN_net.b2;
-        
-        g=dW{i};
-        g2=(dW{i}.^2);
-        DNN_net.mt{i}=b1 *DNN_net.mt{i}+(1-b1).*g;
-        DNN_net.v{i}=b2 *DNN_net.v{i}+(1-b2)*g2;
-        delta_W{i}= DNN_net.mt{i}./(sqrt(DNN_net.v{i})+10^-8);       
-        
-        gb=dWb{i};
-        g2b=(dWb{i}.^2);
-        DNN_net.mtb{i}=b1 *DNN_net.mtb{i}+(1-b1).*gb;
-        DNN_net.vb{i}=b2 *DNN_net.vb{i}+(1-b2)*g2b;
-        delta_Wb{i}= DNN_net.mtb{i}./(sqrt(DNN_net.vb{i})+10^-8);          
+for iL= 1 : numel(DNN_net.LayerDesign)   %  layer
+    tmpLayerType=DNN_net.LayerDesign{iL}.LayerType;   
+    if strcmp(tmpLayerType,'Hidden') || strcmp(tmpLayerType,'Output')
+         if strcmp(LearningApproach,'SGD')
+            DNN_net.LayerDesign{iL}.delta_W=DNN_net.LayerDesign{iL}.dW;
+            DNN_net.LayerDesign{iL}.delta_Wb=DNN_net.LayerDesign{iL}.dWb;
+        elseif strcmp(LearningApproach,'Momentum')
+            m=DNN_net.optimal.m;    
+            DNN_net.LayerDesign{iL}.delta_W= m *DNN_net.LayerDesign{iL}.delta_W+(1-m).*DNN_net.LayerDesign{iL}.dW;
+            DNN_net.LayerDesign{iL}.delta_Wb= m *DNN_net.LayerDesign{iL}.delta_Wb+(1-m).*DNN_net.LayerDesign{iL}.dWb;
+        elseif strcmp(LearningApproach,'AdaGrad')
+            g2=(DNN_net.LayerDesign{iL}.dW.^2);
+            DNN_net.LayerDesign{iL}.delta_W=DNN_net.LayerDesign{iL}.dW./sqrt(g2);
+            g2b=(DNN_net.LayerDesign{iL}.dWb.^2);
+            DNN_net.LayerDesign{iL}.delta_Wb=DNN_net.LayerDesign{iL}.dWb./sqrt(g2b);
+        elseif strcmp(LearningApproach,'RMSProp')
+            m=DNN_net.optimal.m;  
+            g2=(DNN_net.LayerDesign{iL}.dW.^2);
+            DNN_net.LayerDesign{iL}.v=m*DNN_net.LayerDesign{iL}.v+(1-m)*g2;
+            DNN_net.LayerDesign{iL}.delta_W=DNN_net.LayerDesign{iL}.dW./sqrt(DNN_net.LayerDesign{iL}.v+10^-8); 
+
+            g2b=(DNN_net.LayerDesign{iL}.dWb.^2);
+            DNN_net.LayerDesign{iL}.vb=m *DNN_net.LayerDesign{iL}.vb+(1-m)*g2b;
+            DNN_net.LayerDesign{iL}.delta_Wb=DNN_net.LayerDesign{iL}.dWb./sqrt( DNN_net.LayerDesign{iL}.vb+10^-8);  
+        elseif strcmp(LearningApproach,'Adam')
+            b1=DNN_net.optimal.b1;
+            b2=DNN_net.optimal.b2;
+            g=DNN_net.LayerDesign{iL}.dW;
+            g2=(DNN_net.LayerDesign{iL}.dW.^2);
+            DNN_net.LayerDesign{iL}.mt=b1 *DNN_net.LayerDesign{iL}.mt+(1-b1).*g;
+            DNN_net.LayerDesign{iL}.v=b2 *DNN_net.LayerDesign{iL}.v+(1-b2)*g2;
+            DNN_net.LayerDesign{iL}.delta_W = DNN_net.LayerDesign{iL}.mt./(sqrt(DNN_net.LayerDesign{iL}.v)+10^-8);       
+
+            gb=DNN_net.LayerDesign{iL}.dWb;
+            g2b=(DNN_net.LayerDesign{iL}.dWb.^2);
+            DNN_net.LayerDesign{iL}.mtb=b1 *DNN_net.LayerDesign{iL}.mtb+(1-b1).*gb;
+            DNN_net.LayerDesign{iL}.vb=b2 *DNN_net.LayerDesign{iL}.vb+(1-b2)*g2b;
+            DNN_net.LayerDesign{iL}.delta_Wb = DNN_net.LayerDesign{iL}.mtb./(sqrt(DNN_net.LayerDesign{iL}.vb)+10^-8);                   
+        end
+        DNN_net.LayerDesign{iL}.W=DNN_net.LayerDesign{iL}.W-r.*DNN_net.LayerDesign{iL}.delta_W;
+        DNN_net.LayerDesign{iL}.Wb=DNN_net.LayerDesign{iL}.Wb-r.*DNN_net.LayerDesign{iL}.delta_Wb;
     end
-    W{i}=W{i}-r.*delta_W{i};
-    Wb{i}=Wb{i}-r.*delta_Wb{i};
 end
 
-DNN_net.delta_W=delta_W;
-DNN_net.delta_Wb=delta_Wb;
-DNN_net.W=W;
-DNN_net.Wb=Wb;
-DNN_net.dW=dW;
-DNN_net.dWb=dWb;
+
+
+
+
+
