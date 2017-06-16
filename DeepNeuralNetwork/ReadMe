@@ -1,3 +1,4 @@
+6/16/2017, 1. add the dropout approach, 2. modify the NN structure by a clear way, and 3. add activation functions (LeakyReLU, PReLU, ELU)
 3/29/2017, correct some errors in the optimation approach. 
 
 In this version, I didn't apply the batch normalization and dropout approach in the learning process. 
@@ -18,29 +19,34 @@ I would upload a new version with these two approaches.
         SizeOutputLayer: please set to number of class you want to classify.
    
    # How to design your own DNN structure?
+   It' very easy to set your 'number of hidden layer', 'number of hidden node' and the corresponding activation function
+   Just follow the form of the sample code (as following).   
+   
+   DNN_net.LayerDesign={
+   struct('LayerType','Input','LayerName','IL','n_node',SizeInputLayer) 
+   struct('LayerType','Hidden','LayerName','H1','n_node',100,'ActF','ELU','option_ActFunction',0.1)  
+   struct('LayerType','Hidden','LayerName','H2','n_node',100,'ActF','sigmoid')                                
+   struct('LayerType','Output','LayerName','OL','n_node',SizeOutputLayer,'ActF','linear')                                 
+   };
    
    SizeInputLayer: please set to dimension of input data (i.e. dimension).
-   
-   It' very easy to set your 'number of hidden layer' and 'number of hidden node'
-   For instance, 2 hidden layers, first one has 20 node, second one has 10 node:  
-     
-     DesignDNNLayersize=[SizeInputLayer 20 10 SizeOutputLayer];
-    
    Your own DNN structure is
-   InputLayer(dim+1 nodes)→HiddenLayer1(20 nodes)→HiddenLayer2(10 nodes)→OutputLayer(Regression: 1 node, Classification: NumClass nodes)
+   InputLayer(dim+1 nodes)→HiddenLayer1(100 nodes)→HiddenLayer2(100 nodes)→OutputLayer(Regression: 1 node, Classification: NumClass nodes)
    
-   # Aactivation Function
-   I provide four Aactivation Function(sigmoid,tanh ,ReLU, linear).  
+   # Activation Function
+   sigmoid,tanh ,ReLU, linear, LeakyReLU, PReLU, ELU
+   The parameter for the activation functions (PReLU and ELU, default=0.1) would be set as 'option_ActFunction'.
    
-   How to set the Aactivation Function?
-   Following the above example:
-   AactivationFunction={'sigmoid','sigmoid','linear'}; 
   
    Note: last one must be 'linear', because it's for output result, we don't need to activate it.
    
-   # Other parameter for DNN
-   maxIter=1000; %% maximum iteration 
-   LearningRate=0.01; %% Learning rate
+   # Other parameters for the DNN
+   DNN_net.maxIter=100; %% maximum iteration, default=100
+   DNN_net.r=0.01; %% learning rate, default=0.1, 
+   DNN_net.LearningApproach='Adam'; %% default=SGD' ('SGD','Momentum','AdaGrad','RMSProp','Adam'), parameters for LearningApproach was set in the Initialization_Net_DNN.m.  
+   DNN_net.batchsize=100; %% default=100
+   DNN_net.isnormalization=0; %% default=0
+   DNN_net.dropoutFraction=0; %% default=0, and it should be range at [0,1). The dropout approach would be implemented, if the dropoutFraction>0.
    
-   % which type of optimal search approach
-   LearningApproach='Adam'; %% 'SGD','Momentum','AdaGrad','RMSProp','Adam'
+   
+
