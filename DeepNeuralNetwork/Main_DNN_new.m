@@ -7,12 +7,11 @@ load ('sampledata')
 SizeInputLayer=dim;
 SizeOutputLayer=1;
 DNN_net.LayerDesign={
-   struct('LayerType','Input','LayerName','IL','n_node',SizeInputLayer)                                            % input layer
-   struct('LayerType','Hidden','LayerName','H1','n_node',100,'ActF','ELU')  % convolution layer
-   struct('LayerType','Hidden','LayerName','H2','n_node',100,'ActF','ELU')                                  % Pooling layer
-   struct('LayerType','Output','LayerName','OL','n_node',SizeOutputLayer,'ActF','linear')                                  % Pooling layer
+   struct('LayerType','Input','LayerName','IL','n_node',SizeInputLayer) 
+   struct('LayerType','Hidden','LayerName','H1','n_node',100,'ActF','ELU','option_ActFunction',0.1)  
+   struct('LayerType','Hidden','LayerName','H2','n_node',100,'ActF','sigmoid')                                
+   struct('LayerType','Output','LayerName','OL','n_node',SizeOutputLayer,'ActF','linear')                                 
 };
-DNN_net.option_ActFunction=0.1;
 DNN_net.maxIter=100; %%default=100
 DNN_net.r=0.01; %%default=0.1, learning rate
 DNN_net.LearningApproach='Adam';%% default=SGD'
@@ -76,7 +75,6 @@ DNN_net.LayerDesign={
    struct('LayerType','Hidden','LayerName','H2','n_node',100,'ActF','ELU')                                  % Pooling layer
    struct('LayerType','Output','LayerName','OL','n_node',SizeOutputLayer,'ActF','linear')                                  % Pooling layer
 };
-DNN_net.option_ActFunction=0.1;
 DNN_net.maxIter=100; %%default=100
 DNN_net.r=0.01; %%default=0.1, learning rate
 DNN_net.LearningApproach='Adam';%% default=SGD'

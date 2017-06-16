@@ -7,7 +7,7 @@ if ~isfield(DNN_net,'r'); DNN_net.r=0.1; end
 %%% max of learning iteration (epoch), if not converge 
 if ~isfield(DNN_net,'maxIter'); DNN_net.maxIter=100; end
 % droupout fraction
-if ~isfield(DNN_net,'dropoutFraction');  DNN_net.dropoutFraction=0.5; end
+if ~isfield(DNN_net,'dropoutFraction');  DNN_net.dropoutFraction=0; end
 %%% batch learning
 if ~isfield(DNN_net,'batchsize'); DNN_net.batchsize=100; end
 %%% normalization for each dimension
@@ -26,7 +26,7 @@ for iL= 1 : numel(DNN_net.LayerDesign)   %  layer
         
         if strcmp(tmpActF,'PReLU') || strcmp(tmpActF,'ELU')
             if isfield(DNN_net.LayerDesign{iL},'option_ActFunction'); 
-                option_ActFunction=DNN_net.option_ActFunction; 
+                option_ActFunction=DNN_net.LayerDesign{iL}.option_ActFunction; 
             else
                 option_ActFunction=0.01;
             end
